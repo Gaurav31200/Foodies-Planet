@@ -1,6 +1,6 @@
 const express = require("express");
 const { check } = require("express-validator");
-const foodPlacesControllers = require("../controllers/foodPlaces-controllers");
+const foodPlacesControllers = require("../controllers/foodPlaces");
 
 const router = express.Router();
 
