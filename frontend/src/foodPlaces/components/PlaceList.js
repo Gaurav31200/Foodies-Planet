@@ -6,12 +6,12 @@ import "./PlaceList.css";
 import Button from "../../shared/components/FormElements/Button/Button";
 
 export default function PlaceList(props) {
-  if (props.items.length === 0) {
+  if (!props.items || props.items.length === 0) {
     return (
       <div className="place-list center">
         <Card>
           <h2>No Places Found. Maybe Create One?</h2>
-          <Button to="/foodlPlace/new">Share Place</Button>
+          <Button to="/foodplace/new">Share Place</Button>
         </Card>
       </div>
     );
@@ -22,12 +22,13 @@ export default function PlaceList(props) {
         <PlaceItem
           key={place.id}
           id={place.id}
-          image={place.imageUrl}
+          image={place.image}
           title={place.title}
           description={place.description}
           address={place.address}
           creatorId={place.creator}
           coordinates={place.location}
+          onDelete={props.onDeleteFoodPlace}
         />
       ))}
     </ul>

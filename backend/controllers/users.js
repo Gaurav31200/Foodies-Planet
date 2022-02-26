@@ -47,7 +47,7 @@ const signupUser = async (req, res, next) => {
     return next(new HttpError("Signing up user failed!!", 500));
   }
 
-  res.status(200).json({ newUser: newUser.toObject({ getters: true }) });
+  res.status(200).json({ user: newUser.toObject({ getters: true }) });
 };
 
 const loginUser = async (req, res, next) => {
@@ -71,7 +71,12 @@ const loginUser = async (req, res, next) => {
     );
   }
 
-  res.status(200).json({ message: "LoggedIn" });
+  res
+    .status(200)
+    .json({
+      message: "LoggedIn",
+      user: existingUser.toObject({ getters: true }),
+    });
 };
 
 exports.getusers = getusers;

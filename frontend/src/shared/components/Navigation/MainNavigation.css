@@ -11,7 +11,7 @@
 }
 
 .main-navigation__menu-btn span {
-  display: block;
+  display: block; /* extra */
   width: 3rem;
   height: 2.5px;
   background: white;

@@ -8,6 +8,7 @@ import "./NavLinks.css";
 
 const NavLinks = (props) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const userId = useSelector((state) => state.auth.userId);
   const dispatch = useDispatch();
 
   const logoutHandler = () => {
@@ -21,7 +22,7 @@ const NavLinks = (props) => {
       </li>
       {isLoggedIn && (
         <li>
-          <NavLink to="/u1/foodPlaces">MY PLACES</NavLink>
+          <NavLink to={`/${userId}/foodPlaces`}>MY PLACES</NavLink>
         </li>
       )}
       {isLoggedIn && (

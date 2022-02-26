@@ -1,18 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import UsersList from "../components/UsersList";
-
-const USERS = [
-  {
-    id: "u1",
-    name: "Saini",
-    image:
-      "https://i.pinimg.com/280x280_RS/f6/e6/83/f6e6839527aa1df7a8c72118812b1a18.jpg",
-    foodPlacesCount: 3,
-  },
-];
+import { useHttp } from "../../shared/hooks/http-hook";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 
 const Users = () => {
-  return <UsersList items={USERS} />;
+  const { isLoading, error, sendRequest, clearError } = useHttp();
+  const [loadedUsers, setLoadedUsers] = useState();
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await sendRequest("http://localhost:5000/api/users");
+        setLoadedUsers(data.users);
+      } catch (err) {}
+    };
+    fetchUsers();
+  }, [sendRequest]);
+  return (
+    <>
+      <ErrorModal error={error} onClear={clearError} />
+      {isLoading && (
+        <div className="center">
+          <LoadingSpinner />
+        </div>
+      )}
+      {!isLoading && loadedUsers && <UsersList items={loadedUsers} />}
+    </>
+  );
 };
 
 export default Users;

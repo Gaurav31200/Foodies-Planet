@@ -1,16 +1,20 @@
 import React, { useState } from "react";
 import Card from "../../shared/components/UIElements/Card";
 import Button from "../../shared/components/FormElements/Button/Button";
-
 import "./PlaceItem.css";
 import Modal from "../../shared/components/UIElements/Modal";
 import Map from "../../shared/components/UIElements/Map";
 import { useSelector } from "react-redux";
+import { useHttp } from "../../shared/hooks/http-hook";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 
 export default function PlaceItem(props) {
+  const userId = useSelector((state) => state.auth.userId);
   const [showMap, setShowMap] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const { isLoading, error, sendRequest, clearError } = useHttp();
 
   const openMapHandler = () => setShowMap(true);
   const closeMapHandler = () => setShowMap(false);
@@ -21,12 +25,20 @@ export default function PlaceItem(props) {
     setShowConfirmModal(false);
   };
 
-  const confirmDeletingHandler = () => {
-    console.log("Deleting...");
+  const confirmDeletingHandler = async () => {
+    try {
+      await sendRequest(
+        `http://localhost:5000/api/foodPlaces/${props.id}`,
+        "DELETE"
+      );
+      props.onDelete(props.id);
+    } catch (err) {}
     setShowConfirmModal(false);
   };
   return (
     <>
+      {isLoading && <LoadingSpinner asOverlay />}
+      <ErrorModal error={error} onClear={clearError} />
       <Modal
         show={showMap}
         onCancel={closeMapHandler}
@@ -77,8 +89,10 @@ export default function PlaceItem(props) {
             <Button inverse onClick={openMapHandler}>
               VIEW ON MAP
             </Button>
-            {isLoggedIn && <Button to={`/foodplaces/${props.id}`}>EDIT</Button>}
-            {isLoggedIn && (
+            {userId === props.creatorId && (
+              <Button to={`/foodplaces/${props.id}`}>EDIT</Button>
+            )}
+            {userId === props.creatorId && (
               <Button danger onClick={openConfirmModal}>
                 DELETE
               </Button>
