@@ -36,13 +36,12 @@ const signupUser = async (req, res, next) => {
     name,
     email,
     password,
-    image:
-      "https://i.pinimg.com/280x280_RS/f6/e6/83/f6e6839527aa1df7a8c72118812b1a18.jpg",
+    image: req.file.path,
     places: [],
   });
 
   try {
-    newUser.save();
+    await newUser.save();
   } catch (err) {
     return next(new HttpError("Signing up user failed!!", 500));
   }
@@ -71,12 +70,10 @@ const loginUser = async (req, res, next) => {
     );
   }
 
-  res
-    .status(200)
-    .json({
-      message: "LoggedIn",
-      user: existingUser.toObject({ getters: true }),
-    });
+  res.status(200).json({
+    message: "LoggedIn",
+    user: existingUser.toObject({ getters: true }),
+  });
 };
 
 exports.getusers = getusers;

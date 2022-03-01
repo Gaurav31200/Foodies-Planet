@@ -4,14 +4,18 @@ import PlaceItem from "./PlaceItem";
 
 import "./PlaceList.css";
 import Button from "../../shared/components/FormElements/Button/Button";
+import { useSelector } from "react-redux";
 
 export default function PlaceList(props) {
+  const id = useSelector((state) => state.auth.userId);
   if (!props.items || props.items.length === 0) {
     return (
       <div className="place-list center">
         <Card>
           <h2>No Places Found. Maybe Create One?</h2>
-          <Button to="/foodplace/new">Share Place</Button>
+          {(props.userId === id || !id) && (
+            <Button to="/foodplace/new">Share Place</Button>
+          )}
         </Card>
       </div>
     );

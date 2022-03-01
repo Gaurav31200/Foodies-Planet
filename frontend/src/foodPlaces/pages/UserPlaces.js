@@ -66,8 +66,9 @@ const UserPlaces = () => {
           <LoadingSpinner />
         </div>
       )}
-      {!isLoading && loadedPlaces && (
+      {!isLoading && (
         <PlaceList
+          userId={userId}
           items={loadedPlaces}
           onDeleteFoodPlace={deletePlaceHandler}
         />

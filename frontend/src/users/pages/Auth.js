@@ -6,17 +6,17 @@ import Input from "../../shared/components/FormElements/Input/Input";
 import Card from "../../shared/components/UIElements/Card";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
-import "../../foodPlaces/pages/FoodPlaceForm.css";
+import ImageUpload from "../../shared/components/FormElements/Image/ImageUpload";
+import { useHttp } from "../../shared/hooks/http-hook";
+import { useForm } from "../../shared/hooks/form-hook";
+import { authActions } from "../../shared/store/auth-slice";
 import {
   VALIDATOR_EMAIL,
   VALIDATOR_MINLENGTH,
   VALIDATOR_REQUIRE,
 } from "../../shared/components/Util/validators";
-import { useHttp } from "../../shared/hooks/http-hook";
-import { useForm } from "../../shared/hooks/form-hook";
-import { authActions } from "../../shared/store/auth-slice";
-
 import "./Auth.css";
+import "../../foodPlaces/pages/FoodPlaceForm.css";
 
 export default function Auth() {
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -51,18 +51,16 @@ export default function Auth() {
         dispatch(authActions.login(responseData.user.id));
       } catch (err) {}
     } else {
+      const formData = new FormData();
+      formData.append("email", formState.inputs.email.value);
+      formData.append("name", formState.inputs.name.value);
+      formData.append("password", formState.inputs.password.value);
+      formData.append("image", formState.inputs.image.value);
       try {
         const responseData = await sendRequest(
           "http://localhost:5000/api/users/signup",
           "POST",
-          JSON.stringify({
-            name: formState.inputs.name.value,
-            password: formState.inputs.password.value,
-            email: formState.inputs.email.value,
-          }),
-          {
-            "Content-Type": "application/json",
-          }
+          formData // fetch will automatically select the headers
         );
         dispatch(authActions.login(responseData.user.id));
       } catch (err) {}
@@ -74,6 +72,7 @@ export default function Auth() {
         {
           ...formState.inputs,
           name: undefined,
+          image: undefined,
         },
         formState.inputs.email.isValid && formState.inputs.password.isValid
       );
@@ -83,6 +82,10 @@ export default function Auth() {
           ...formState.inputs,
           name: {
             value: "",
+            isValid: false,
+          },
+          image: {
+            value: null,
             isValid: false,
           },
         },
@@ -129,6 +132,9 @@ export default function Auth() {
             onInput={inputHandler}
             errorText="Please enter a password more than 6 characters"
           />
+          {!isLoginMode && (
+            <ImageUpload id="image" center onInput={inputHandler} />
+          )}
           <Button type="submit" disabled={!formState.isValid}>
             {!isLoginMode ? "SIGNUP" : "LOGIN"}
           </Button>

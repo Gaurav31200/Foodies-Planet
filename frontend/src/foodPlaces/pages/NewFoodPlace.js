@@ -1,6 +1,8 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import Input from "../../shared/components/FormElements/Input/Input";
 import Button from "../../shared/components/FormElements/Button/Button";
 import {
@@ -9,9 +11,9 @@ import {
 } from "../../shared/components/Util/validators";
 import { useForm } from "../../shared/hooks/form-hook";
 import { useHttp } from "../../shared/hooks/http-hook";
+
 import "./FoodPlaceForm.css";
-import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
-import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import ImageUpload from "../../shared/components/FormElements/Image/ImageUpload";
 
 const NewFoodPlace = () => {
   const { isLoading, error, sendRequest, clearError } = useHttp();
@@ -30,6 +32,10 @@ const NewFoodPlace = () => {
         value: "",
         isValid: false,
       },
+      image: {
+        value: null,
+        isValid: false,
+      },
     },
     false
   );
@@ -38,19 +44,17 @@ const NewFoodPlace = () => {
 
   const placeSubmitHandler = async (event) => {
     event.preventDefault();
+    const formData = new FormData();
+    formData.append("title", formState.inputs.title.value);
+    formData.append("description", formState.inputs.description.value);
+    formData.append("address", formState.inputs.address.value);
+    formData.append("creator", userId);
+    formData.append("image", formState.inputs.image.value);
     try {
       await sendRequest(
         "http://localhost:5000/api/foodPlaces",
         "POST",
-        JSON.stringify({
-          title: formState.inputs.title.value,
-          description: formState.inputs.description.value,
-          address: formState.inputs.address.value,
-          creator: userId,
-        }),
-        {
-          "Content-Type": "application/json",
-        }
+        formData
       );
       Navigate("/");
     } catch (err) {}
@@ -87,7 +91,12 @@ const NewFoodPlace = () => {
           onInput={inputHandler}
           validators={[VALIDATOR_REQUIRE()]}
         />
-
+        <ImageUpload
+          id="image"
+          center
+          onInput={inputHandler}
+          errorText="Please Provide an Image"
+        />
         <Button type="submit" disabled={!formState.isValid}>
           ADD PLACE
         </Button>

@@ -1,6 +1,7 @@
 const express = require("express");
 const { check } = require("express-validator");
 const foodPlacesControllers = require("../controllers/foodPlaces");
+const imageUpload = require("../middlewares/image-upload");
 
 const router = express.Router();
 
@@ -10,6 +11,7 @@ router.get("/user/:uid", foodPlacesControllers.getPlaceByUserId);
 
 router.post(
   "/",
+  imageUpload.single("image"),
   [
     check("title").notEmpty(),
     check("description").isLength({ min: 5 }),

@@ -43,11 +43,11 @@ const getPlaceByUserId = async (req, res, next) => {
     );
     return next(error);
   }
-  if (!places || places.length === 0) {
-    return next(
-      new HttpError("Couldn't find the place for the provided user id. ", 404)
-    );
-  }
+  // if (!places || places.length === 0) {
+  //   return next(
+  //     new HttpError("Couldn't find the place for the provided user id. ", 404)
+  //   );
+  // }
   res.json({
     places: places.map((place) => place.toObject({ getters: true })),
   });
@@ -69,8 +69,7 @@ const createFoodPlace = async (req, res, next) => {
     title,
     description,
     address,
-    image:
-      "https://content.jdmagicbox.com/comp/delhi/w4/011pxx11.xx11.140515192034.e9w4/catalogue/kc-restaurant-dwarka-sector-7-delhi-fast-food-mtk88s1i81.jpg",
+    image: req.file.path,
     location: coordinates,
     creator,
   });
@@ -121,6 +120,13 @@ const updateFoodPlace = async (req, res, next) => {
   updatedPlace.title = title;
   updatedPlace.description = description;
   updatedPlace.address = address;
+  let coordinates;
+  try {
+    coordinates = await getCoordinates(address);
+  } catch (error) {
+    return next(error);
+  }
+  updatedPlace.location = coordinates;
 
   try {
     await updatedPlace.save();
