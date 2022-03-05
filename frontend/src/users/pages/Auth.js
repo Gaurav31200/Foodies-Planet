@@ -48,7 +48,12 @@ export default function Auth() {
             "Content-Type": "application/json",
           }
         );
-        dispatch(authActions.login(responseData.user.id));
+        dispatch(
+          authActions.login({
+            uId: responseData.userId,
+            token: responseData.token,
+          })
+        );
       } catch (err) {}
     } else {
       const formData = new FormData();
@@ -62,7 +67,12 @@ export default function Auth() {
           "POST",
           formData // fetch will automatically select the headers
         );
-        dispatch(authActions.login(responseData.user.id));
+        dispatch(
+          authActions.login({
+            uId: responseData.userId,
+            token: responseData.token,
+          })
+        );
       } catch (err) {}
     }
   };

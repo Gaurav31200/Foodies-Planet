@@ -43,11 +43,11 @@ const getPlaceByUserId = async (req, res, next) => {
     );
     return next(error);
   }
-  // if (!places || places.length === 0) {
-  //   return next(
-  //     new HttpError("Couldn't find the place for the provided user id. ", 404)
-  //   );
-  // }
+  if (!places) {
+    return next(
+      new HttpError("Couldn't find the place for the provided user id. ", 404)
+    );
+  }
   res.json({
     places: places.map((place) => place.toObject({ getters: true })),
   });
@@ -117,6 +117,10 @@ const updateFoodPlace = async (req, res, next) => {
     );
     return next(error);
   }
+
+  if (updatedPlace.creator.toString() !== req.userData.userId) {
+    return next(new HttpError("You are not allowed to manipulate!!", 401));
+  }
   updatedPlace.title = title;
   updatedPlace.description = description;
   updatedPlace.address = address;
@@ -171,6 +175,9 @@ const deleteFoodPlace = async (req, res, next) => {
   }
   if (!existingUser) {
     return next(new HttpError("Couldn't find the user", 404));
+  }
+  if (place.creator.toString() !== req.userData.userId) {
+    return next(new HttpError("You are not allowed to manipulate!!", 401));
   }
 
   try {

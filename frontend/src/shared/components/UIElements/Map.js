@@ -16,7 +16,7 @@ export default function Map(props) {
       style: "mapbox://styles/mapbox/streets-v11",
       center: [center.lng, center.lat],
       zoom: zoom,
-      pitch: 10,
+      pitch: 40,
     });
     new mapboxgl.Marker().setLngLat([center.lng, center.lat]).addTo(map);
     map.addControl(new mapboxgl.NavigationControl());

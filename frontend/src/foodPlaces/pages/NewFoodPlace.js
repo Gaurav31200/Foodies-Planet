@@ -17,6 +17,7 @@ import ImageUpload from "../../shared/components/FormElements/Image/ImageUpload"
 
 const NewFoodPlace = () => {
   const { isLoading, error, sendRequest, clearError } = useHttp();
+  const token = useSelector((state) => state.auth.token);
   const userId = useSelector((state) => state.auth.userId);
   const [formState, inputHandler] = useForm(
     {
@@ -54,7 +55,10 @@ const NewFoodPlace = () => {
       await sendRequest(
         "http://localhost:5000/api/foodPlaces",
         "POST",
-        formData
+        formData,
+        {
+          Authorization: "Bearer " + token,
+        }
       );
       Navigate("/");
     } catch (err) {}

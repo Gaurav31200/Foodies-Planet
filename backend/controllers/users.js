@@ -1,5 +1,8 @@
-const { v4: uuid } = require("uuid");
+// const { v4: uuid } = require("uuid");
 const { validationResult } = require("express-validator");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
 const HttpError = require("../models/http-error");
 const user = require("../models/user");
 
@@ -32,10 +35,17 @@ const signupUser = async (req, res, next) => {
     return next(new HttpError("User already exists!", 422));
   }
 
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 15);
+  } catch (err) {
+    return next(new HttpError("Can't create a new user", 500));
+  }
+
   const newUser = new user({
     name,
     email,
-    password,
+    password: hashedPassword,
     image: req.file.path,
     places: [],
   });
@@ -45,8 +55,20 @@ const signupUser = async (req, res, next) => {
   } catch (err) {
     return next(new HttpError("Signing up user failed!!", 500));
   }
+  let token;
+  try {
+    token = await jwt.sign(
+      { userId: newUser.id, email: newUser.email },
+      "Foodies_Secret_Key",
+      { expiresIn: "1h" }
+    );
+  } catch (err) {
+    return next(new HttpError("Signing up user failed!!", 500));
+  }
 
-  res.status(200).json({ user: newUser.toObject({ getters: true }) });
+  res
+    .status(200)
+    .json({ userId: newUser.id, email: newUser.email, token: token });
 };
 
 const loginUser = async (req, res, next) => {
@@ -61,7 +83,22 @@ const loginUser = async (req, res, next) => {
   } catch (err) {
     return next(new HttpError("Couldn't login, please try again later.", 500));
   }
-  if (!existingUser || existingUser.password !== password) {
+  if (!existingUser) {
+    return next(
+      new HttpError(
+        "Couldn't identify the user, credentials seems to be wrong!!",
+        401
+      )
+    );
+  }
+  let passwordIsValid = false;
+  try {
+    passwordIsValid = await bcrypt.compare(password, existingUser.password);
+  } catch (err) {
+    return next(new HttpError("Couldn't login, please try again later.", 500));
+  }
+
+  if (!passwordIsValid) {
     return next(
       new HttpError(
         "Couldn't identify the user, credentials seems to be wrong!!",
@@ -70,9 +107,21 @@ const loginUser = async (req, res, next) => {
     );
   }
 
+  let token;
+  try {
+    token = await jwt.sign(
+      { userId: existingUser.id, email: existingUser.email },
+      "Foodies_Secret_Key",
+      { expiresIn: "1h" }
+    );
+  } catch (err) {
+    return next(new HttpError("Logging in user failed!!", 500));
+  }
+
   res.status(200).json({
-    message: "LoggedIn",
-    user: existingUser.toObject({ getters: true }),
+    userId: existingUser.id,
+    email: existingUser.email,
+    token: token,
   });
 };
 

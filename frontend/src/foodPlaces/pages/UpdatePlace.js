@@ -19,6 +19,7 @@ export default function UpdatePlace() {
   const placeId = useParams().placeId;
   const [updatedPlace, setUpdatedPlace] = useState(null);
   const { isLoading, error, sendRequest, clearError } = useHttp();
+  const token = useSelector((state) => state.auth.token);
   const userId = useSelector((state) => state.auth.userId);
   const [formState, inputHandler, setFormData] = useForm(
     {
@@ -70,6 +71,7 @@ export default function UpdatePlace() {
         }),
         {
           "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
         }
       );
       Navigate("/" + userId + "/foodPlaces");

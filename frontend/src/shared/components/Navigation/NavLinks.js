@@ -14,9 +14,12 @@ const NavLinks = (props) => {
   const logoutHandler = () => {
     dispatch(authActions.logout());
   };
+  const closeDrwaerHandler = () => {
+    if (props.drawerIsOpen) props.onHit();
+  };
 
   return (
-    <ul className="nav-links">
+    <ul className="nav-links" onClick={closeDrwaerHandler}>
       <li>
         <NavLink to="/">ALL USERS</NavLink>
       </li>

@@ -5,10 +5,13 @@ import NewFoodPlace from "./foodPlaces/pages/NewFoodPlace";
 import UpdatePlace from "./foodPlaces/pages/UpdatePlace";
 import UserPlaces from "./foodPlaces/pages/UserPlaces";
 import MainNavigation from "./shared/components/Navigation/MainNavigation";
+import { useAuth } from "./shared/hooks/auth-hook";
 import Auth from "./users/pages/Auth";
 import Users from "./users/pages/Users";
+
 const App = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  useAuth();
   return (
     <>
       <MainNavigation />

@@ -11,6 +11,7 @@ import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 
 export default function PlaceItem(props) {
   const userId = useSelector((state) => state.auth.userId);
+  const token = useSelector((state) => state.auth.token);
   const [showMap, setShowMap] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { isLoading, error, sendRequest, clearError } = useHttp();
@@ -28,7 +29,9 @@ export default function PlaceItem(props) {
     try {
       await sendRequest(
         `http://localhost:5000/api/foodPlaces/${props.id}`,
-        "DELETE"
+        "DELETE",
+        null,
+        { Authorization: "Bearer " + token }
       );
       props.onDelete(props.id);
     } catch (err) {}
