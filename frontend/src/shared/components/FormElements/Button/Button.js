@@ -9,7 +9,9 @@ const Button = (props) => {
       <a
         className={`button button--${props.size || "default"} ${
           props.inverse && "button--inverse"
-        } ${props.danger && "button--danger"}`}
+        } ${props.danger && "button--danger"} ${
+          props.className ? props.className : "default"
+        }`}
         href={props.href}
       >
         {props.children}

@@ -7,4 +7,17 @@
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
+  animation: users-appear 1s ease-in forwards;
+}
+
+@keyframes users-appear {
+  from {
+    opacity: 0;
+    transform: translateY(3rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

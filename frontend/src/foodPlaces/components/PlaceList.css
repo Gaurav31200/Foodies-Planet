@@ -2,6 +2,19 @@
   list-style: none;
   margin: 1rem auto;
   padding: 0;
-  width: 45%;
-  /* max-width: 40rem; */
+  width: 90%;
+  max-width: 40rem;
+  animation: places-appear 1s ease-out forwards;
+}
+
+@keyframes places-appear {
+  from {
+    opacity: 0;
+    transform: translateY(3rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

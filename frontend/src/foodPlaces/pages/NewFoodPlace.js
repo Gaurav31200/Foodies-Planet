@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
@@ -11,14 +11,17 @@ import {
 } from "../../shared/components/Util/validators";
 import { useForm } from "../../shared/hooks/form-hook";
 import { useHttp } from "../../shared/hooks/http-hook";
+import ImageUpload from "../../shared/components/FormElements/Image/ImageUpload";
+import Modal from "../../shared/components/UIElements/Modal";
+import Map from "../../shared/components/UIElements/Map";
 
 import "./FoodPlaceForm.css";
-import ImageUpload from "../../shared/components/FormElements/Image/ImageUpload";
 
 const NewFoodPlace = () => {
   const { isLoading, error, sendRequest, clearError } = useHttp();
   const token = useSelector((state) => state.auth.token);
-  const userId = useSelector((state) => state.auth.userId);
+  const [showMap, setShowMap] = useState(false);
+  const [coordinates, setCoordinates] = useState(null);
   const [formState, inputHandler] = useForm(
     {
       title: {
@@ -37,6 +40,10 @@ const NewFoodPlace = () => {
         value: null,
         isValid: false,
       },
+      map: {
+        value: null,
+        isValid: false,
+      },
     },
     false
   );
@@ -45,15 +52,32 @@ const NewFoodPlace = () => {
 
   const placeSubmitHandler = async (event) => {
     event.preventDefault();
+    // let formData = new FormData();
+    // let url;
+    // formData.append("file", formState.inputs.image.value);
+    // formData.append("upload_preset", "foodPlaces");
+    // try {
+    //   const res = await sendRequest(
+    //     "https://api.cloudinary.com/v1_1/dyqmlqksn/image/upload",
+    //     "POST",
+    //     formData
+    //   );
+    //   url = res.url;
+    // } catch (err) {
+    //   console.log(err);
+    // }
+
     const formData = new FormData();
     formData.append("title", formState.inputs.title.value);
     formData.append("description", formState.inputs.description.value);
     formData.append("address", formState.inputs.address.value);
-    formData.append("creator", userId);
+    // formData.append("url", url);
     formData.append("image", formState.inputs.image.value);
+    formData.append("lat", coordinates.lat);
+    formData.append("lng", coordinates.lng);
     try {
       await sendRequest(
-        "http://localhost:5000/api/foodPlaces",
+        `${process.env.REACT_APP_BACKEND_URL}/foodPlaces`,
         "POST",
         formData,
         {
@@ -63,10 +87,50 @@ const NewFoodPlace = () => {
       Navigate("/");
     } catch (err) {}
   };
+  const openMapHandler = () => setShowMap(true);
+  const closeMapHandler = () => setShowMap(false);
+
+  const coordinatesHandler = useCallback(
+    (coords) => {
+      setCoordinates(coords);
+      inputHandler("map", null, true);
+    },
+    [inputHandler]
+  );
+  const resetMapHandler = () => {
+    setCoordinates(null);
+    inputHandler("map", null, false);
+  };
   return (
     <>
       {error && <ErrorModal onClear={clearError} />}
       {isLoading && <LoadingSpinner asOverlay />}
+      <Modal
+        show={showMap}
+        onCancel={closeMapHandler}
+        header="Please mark"
+        contentClass="modal-content"
+        footerClass="modal-actions"
+        footer={
+          <>
+            <Button onClick={resetMapHandler} inverse>
+              RESET
+            </Button>
+            <Button onClick={closeMapHandler} danger>
+              CLOSE
+            </Button>
+          </>
+        }
+      >
+        <div className="map-container">
+          <Map
+            markPlace={true}
+            coords={coordinates}
+            updateCoordinates={coordinatesHandler}
+            zoom={coordinates ? 15 : 5}
+          />
+        </div>
+      </Modal>
       <form className="place-form" onSubmit={placeSubmitHandler}>
         <Input
           id="title"
@@ -95,6 +159,11 @@ const NewFoodPlace = () => {
           onInput={inputHandler}
           validators={[VALIDATOR_REQUIRE()]}
         />
+        <div className="map-Button">
+          <Button type="button" onClick={openMapHandler}>
+            Mark place on Map
+          </Button>
+        </div>
         <ImageUpload
           id="image"
           center

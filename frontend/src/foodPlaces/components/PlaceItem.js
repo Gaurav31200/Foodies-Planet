@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import Card from "../../shared/components/UIElements/Card";
-import Button from "../../shared/components/FormElements/Button/Button";
-import "./PlaceItem.css";
-import Modal from "../../shared/components/UIElements/Modal";
-import Map from "../../shared/components/UIElements/Map";
 import { useSelector } from "react-redux";
 import { useHttp } from "../../shared/hooks/http-hook";
+import Card from "../../shared/components/UIElements/Card";
+import Button from "../../shared/components/FormElements/Button/Button";
+import Modal from "../../shared/components/UIElements/Modal";
+import Map from "../../shared/components/UIElements/Map";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+
+import "./PlaceItem.css";
 
 export default function PlaceItem(props) {
   const userId = useSelector((state) => state.auth.userId);
@@ -28,7 +29,7 @@ export default function PlaceItem(props) {
   const confirmDeletingHandler = async () => {
     try {
       await sendRequest(
-        `http://localhost:5000/api/foodPlaces/${props.id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/foodPlaces/${props.id}`,
         "DELETE",
         null,
         { Authorization: "Bearer " + token }
@@ -54,7 +55,7 @@ export default function PlaceItem(props) {
         }
       >
         <div className="map-container">
-          <Map center={props.coordinates} zoom={16} />
+          <Map coords={props.coordinates} zoom={16} />
         </div>
       </Modal>
       <Modal
@@ -81,7 +82,8 @@ export default function PlaceItem(props) {
         <Card className="place-item__content">
           <div className="place-item__image">
             <img
-              src={`http://localhost:5000/${props.image}`}
+              src={props.image}
+              // src={`${process.env.REACT_APP_ASSET_URL}/${props.image}`}
               alt={props.title}
             />
           </div>
@@ -94,6 +96,7 @@ export default function PlaceItem(props) {
             <Button inverse onClick={openMapHandler}>
               VIEW ON MAP
             </Button>
+
             {userId === props.creatorId && (
               <Button to={`/foodplaces/${props.id}`}>EDIT</Button>
             )}

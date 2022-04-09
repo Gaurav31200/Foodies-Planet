@@ -8,21 +8,53 @@ mapboxgl.accessToken =
 
 export default function Map(props) {
   const mapRef = useRef(null);
-  const { center, zoom } = props;
+  const { coords, zoom, markPlace, updateCoordinates } = props;
 
   useEffect(() => {
+    let coordinates = {
+      lng: coords ? coords.lng : "79.434988",
+      lat: coords ? coords.lat : "22.9216711",
+    };
     const map = new mapboxgl.Map({
       container: mapRef.current,
       style: "mapbox://styles/mapbox/streets-v11",
-      center: [center.lng, center.lat],
-      zoom: zoom,
-      pitch: 40,
+      center: [coordinates.lng, coordinates.lat],
+      zoom: zoom ? zoom : 5,
     });
-    new mapboxgl.Marker().setLngLat([center.lng, center.lat]).addTo(map);
+    if (markPlace) {
+      map.on("dblclick", (event) => {
+        event.preventDefault();
+        const { lng, lat } = event.lngLat;
+        coordinates = {
+          lng: lng,
+          lat: lat,
+        };
+        updateCoordinates(coordinates);
+      });
+    }
+    if ((markPlace && coords) || !markPlace) {
+      new mapboxgl.Marker()
+        .setLngLat([coordinates.lng, coordinates.lat])
+        .addTo(map);
+    }
+    // current location
+    const currentLocation = new mapboxgl.GeolocateControl({
+      positionOption: {
+        enableHighAccuracy: true,
+      },
+      trackUserLocation: true,
+    });
+    map.addControl(currentLocation);
+
+    // to navigate
     map.addControl(new mapboxgl.NavigationControl());
+
+    //to fullcontrol
+    map.addControl(new mapboxgl.FullscreenControl());
+
     // Clean up on unmount
     return () => map.remove();
-  }, [center, zoom]);
+  }, [coords, zoom, updateCoordinates, markPlace]);
 
   return (
     <div

@@ -18,12 +18,14 @@ export default function ImageUpload(props) {
     };
     fileReader.readAsDataURL(image);
   }, [image]);
+
   const imageHandler = () => {
     imageRef.current.click();
   };
+
   const pickedHandler = (event) => {
     let pickedImage;
-    let imageIsValid;
+    let imageIsValid = isValid;
     if (event.target.files || event.target.files.length === 1) {
       pickedImage = event.target.files[0];
       setImage(pickedImage);
@@ -54,7 +56,7 @@ export default function ImageUpload(props) {
           Add Image
         </Button>
       </div>
-      {!isValid && <p>{props.errorText}</p>}
+      {!isValid && <p className="center">{props.errorText}</p>}
     </div>
   );
 }

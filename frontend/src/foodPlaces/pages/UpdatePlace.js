@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import Button from "../../shared/components/FormElements/Button/Button";
 import Input from "../../shared/components/FormElements/Input/Input";
 import Card from "../../shared/components/UIElements/Card";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import Modal from "../../shared/components/UIElements/Modal";
+import Map from "../../shared/components/UIElements/Map";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import {
   VALIDATOR_MINLENGTH,
@@ -18,6 +20,8 @@ import "./FoodPlaceForm.css";
 export default function UpdatePlace() {
   const placeId = useParams().placeId;
   const [updatedPlace, setUpdatedPlace] = useState(null);
+  const [coordinates, setCoordinates] = useState(null);
+  const [showMap, setShowMap] = useState(false);
   const { isLoading, error, sendRequest, clearError } = useHttp();
   const token = useSelector((state) => state.auth.token);
   const userId = useSelector((state) => state.auth.userId);
@@ -26,6 +30,7 @@ export default function UpdatePlace() {
       title: { value: "", isValid: false },
       description: { value: "", isValid: false },
       address: { value: "", isValid: false },
+      map: { value: "", isValid: false },
     },
     true
   );
@@ -35,7 +40,7 @@ export default function UpdatePlace() {
     const fetchFoodPlace = async () => {
       try {
         const responseData = await sendRequest(
-          `http://localhost:5000/api/foodPlaces/${placeId}`
+          `${process.env.REACT_APP_BACKEND_URL}/foodPlaces/${placeId}`
         );
 
         setFormData(
@@ -49,10 +54,15 @@ export default function UpdatePlace() {
               value: responseData.place.address,
               isValid: true,
             },
+            map: {
+              value: responseData.place.location,
+              isValid: true,
+            },
           },
           true
         );
         setUpdatedPlace(responseData.place);
+        setCoordinates(responseData.place.location);
       } catch (err) {}
     };
     fetchFoodPlace();
@@ -62,12 +72,13 @@ export default function UpdatePlace() {
     event.preventDefault();
     try {
       await sendRequest(
-        `http://localhost:5000/api/foodPlaces/${placeId}`,
+        `${process.env.REACT_APP_BACKEND_URL}/foodPlaces/${placeId}`,
         "PATCH",
         JSON.stringify({
           title: formState.inputs.title.value,
           description: formState.inputs.description.value,
           address: formState.inputs.address.value,
+          coordinates: coordinates,
         }),
         {
           "Content-Type": "application/json",
@@ -76,6 +87,20 @@ export default function UpdatePlace() {
       );
       Navigate("/" + userId + "/foodPlaces");
     } catch (err) {}
+  };
+
+  const openMapHandler = () => setShowMap(true);
+  const closeMapHandler = () => setShowMap(false);
+  const coordinatesHandler = useCallback(
+    (coords) => {
+      setCoordinates(coords);
+      inputHandler("map", null, true);
+    },
+    [inputHandler]
+  );
+  const resetMapHandler = () => {
+    setCoordinates(null);
+    inputHandler("map", null, false);
   };
   if (isLoading) {
     return (
@@ -97,6 +122,32 @@ export default function UpdatePlace() {
   return (
     <>
       <ErrorModal error={error} onClear={clearError} />
+      <Modal
+        show={showMap}
+        onCancel={closeMapHandler}
+        header="Please mark"
+        contentClass="modal-content"
+        footerClass="modal-actions"
+        footer={
+          <>
+            <Button onClick={resetMapHandler} inverse>
+              RESET
+            </Button>
+            <Button onClick={closeMapHandler} danger>
+              CLOSE
+            </Button>
+          </>
+        }
+      >
+        <div className="map-container">
+          <Map
+            markPlace={true}
+            coords={coordinates}
+            updateCoordinates={coordinatesHandler}
+            zoom={coordinates ? 15 : 5}
+          />
+        </div>
+      </Modal>
       <form className="place-form" onSubmit={placeUpdateSubmitHandler}>
         <Input
           id="title"
@@ -130,6 +181,11 @@ export default function UpdatePlace() {
           initialValid={formState.inputs.address.isValid}
           onInput={inputHandler}
         />
+        <div className="map-Button">
+          <Button type="button" onClick={openMapHandler}>
+            Mark place on Map
+          </Button>
+        </div>
         <Button type="submit" disabled={!formState.isValid}>
           UPDATE
         </Button>

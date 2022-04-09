@@ -1,7 +1,7 @@
+const cloudinary = require("../util/cloudinary");
 const HttpError = require("../models/http-error");
 const mongoose = require("mongoose");
 const { validationResult } = require("express-validator");
-const getCoordinates = require("../util/location");
 
 const foodPlace = require("../models/foodPlace");
 const User = require("../models/user");
@@ -58,19 +58,30 @@ const createFoodPlace = async (req, res, next) => {
   if (!errors.isEmpty()) {
     next(new HttpError("Please provide appropriate data.", 422));
   }
-  const { title, description, address, creator } = req.body;
-  let coordinates;
+  const { title, description, address, lat, lng } = req.body;
+  // let coordinates;
+  // try {
+  //   coordinates = await getCoordinates(address);
+  // } catch (error) {
+  //   return next(error);
+  // }
+  let response;
   try {
-    coordinates = await getCoordinates(address);
-  } catch (error) {
-    return next(error);
+    response = await cloudinary.uploader.upload(req.file.path);
+  } catch (err) {
+    return next(err);
   }
+  const creator = req.userData.userId;
   const createdFoodPlace = new foodPlace({
     title,
     description,
     address,
-    image: req.file.path,
-    location: coordinates,
+    imageUrl: response.secure_url,
+    imagePublicId: response.public_id,
+    location: {
+      lng: lng,
+      lat: lat,
+    },
     creator,
   });
 
@@ -104,7 +115,7 @@ const updateFoodPlace = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return new HttpError("Please provide appropriate data.", 422);
   }
-  const { title, description, address } = req.body;
+  const { title, description, address, coordinates, url } = req.body;
   const placeId = req.params.pid;
 
   let updatedPlace;
@@ -124,12 +135,13 @@ const updateFoodPlace = async (req, res, next) => {
   updatedPlace.title = title;
   updatedPlace.description = description;
   updatedPlace.address = address;
-  let coordinates;
-  try {
-    coordinates = await getCoordinates(address);
-  } catch (error) {
-    return next(error);
-  }
+  updatedPlace.image = url;
+  // let coordinates;
+  // try {
+  //   coordinates = await getCoordinates(address);
+  // } catch (error) {
+  //   return next(error);
+  // }
   updatedPlace.location = coordinates;
 
   try {
@@ -180,6 +192,11 @@ const deleteFoodPlace = async (req, res, next) => {
     return next(new HttpError("You are not allowed to manipulate!!", 401));
   }
 
+  try {
+    await cloudinary.uploader.destroy(place.imagePublicId);
+  } catch (err) {
+    return next(err);
+  }
   try {
     const session = await mongoose.startSession();
     session.startTransaction();

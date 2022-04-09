@@ -12,7 +12,7 @@ export default function PlaceList(props) {
     return (
       <div className="place-list center">
         <Card>
-          <h2>No Places Found. Maybe Create One?</h2>
+          <h2>No Places Found.</h2>
           {(props.userId === id || !id) && (
             <Button to="/foodplace/new">Share Place</Button>
           )}
@@ -26,7 +26,7 @@ export default function PlaceList(props) {
         <PlaceItem
           key={place.id}
           id={place.id}
-          image={place.image}
+          image={place.imageUrl}
           title={place.title}
           description={place.description}
           address={place.address}

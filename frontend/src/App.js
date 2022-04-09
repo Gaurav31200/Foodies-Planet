@@ -1,13 +1,17 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { useSelector } from "react-redux";
 import { Navigate, Route, Routes } from "react-router-dom";
-import NewFoodPlace from "./foodPlaces/pages/NewFoodPlace";
-import UpdatePlace from "./foodPlaces/pages/UpdatePlace";
-import UserPlaces from "./foodPlaces/pages/UserPlaces";
 import MainNavigation from "./shared/components/Navigation/MainNavigation";
+import LoadingSpinner from "./shared/components/UIElements/LoadingSpinner";
 import { useAuth } from "./shared/hooks/auth-hook";
-import Auth from "./users/pages/Auth";
-import Users from "./users/pages/Users";
+
+const NewFoodPlace = React.lazy(() =>
+  import("./foodPlaces/pages/NewFoodPlace")
+);
+const UpdatePlace = React.lazy(() => import("./foodPlaces/pages/UpdatePlace"));
+const UserPlaces = React.lazy(() => import("./foodPlaces/pages/UserPlaces"));
+const Users = React.lazy(() => import("./users/pages/Users"));
+const Auth = React.lazy(() => import("./users/pages/Auth"));
 
 const App = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -15,25 +19,33 @@ const App = () => {
   return (
     <>
       <MainNavigation />
-      <main>
-        <Routes>
-          <Route path="/" element={<Users />} />
-          {isLoggedIn && (
-            <Route path="/foodplace/new" element={<NewFoodPlace />} />
-          )}
-          <Route path="/:userId/foodPlaces" element={<UserPlaces />} />
-          {isLoggedIn && (
-            <Route path="foodplaces/:placeId" element={<UpdatePlace />} />
-          )}
-          {!isLoggedIn && <Route path="/auth" element={<Auth />} />}
-          {isLoggedIn && (
-            <Route path="*" element={<Navigate replace to="/" />} />
-          )}
-          {!isLoggedIn && (
-            <Route path="*" element={<Navigate replace to="/auth" />} />
-          )}
-        </Routes>
-      </main>
+      <Suspense
+        fallback={
+          <div className="center">
+            <LoadingSpinner />
+          </div>
+        }
+      >
+        <main>
+          <Routes>
+            <Route path="/" element={<Users />} />
+            {isLoggedIn && (
+              <Route path="/foodplace/new" element={<NewFoodPlace />} />
+            )}
+            <Route path="/:userId/foodPlaces" element={<UserPlaces />} />
+            {isLoggedIn && (
+              <Route path="foodplaces/:placeId" element={<UpdatePlace />} />
+            )}
+            {!isLoggedIn && <Route path="/auth" element={<Auth />} />}
+            {isLoggedIn && (
+              <Route path="*" element={<Navigate replace to="/" />} />
+            )}
+            {!isLoggedIn && (
+              <Route path="*" element={<Navigate replace to="/auth" />} />
+            )}
+          </Routes>
+        </main>
+      </Suspense>
     </>
   );
 };

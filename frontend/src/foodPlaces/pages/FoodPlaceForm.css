@@ -12,3 +12,17 @@
   /* align-items: center; */
   justify-content: center;
 }
+
+.modal-content {
+  padding: 0;
+}
+
+.modal-actions {
+  text-align: right;
+}
+
+.map-Button {
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+}

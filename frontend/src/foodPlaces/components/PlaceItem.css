@@ -57,8 +57,8 @@
   width: 100%;
 }
 
-@media (min-width: 95px) {
+@media (min-width: 768px) {
   .place-item__image {
-    height: 17rem;
+    height: 20rem;
   }
 }

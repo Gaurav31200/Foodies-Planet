@@ -14,7 +14,7 @@ const UserPlaces = () => {
     const fetchPlaces = async () => {
       try {
         const responseData = await sendRequest(
-          `http://localhost:5000/api/foodPlaces/user/${userId}`
+          `${process.env.REACT_APP_BACKEND_URL}/foodPlaces/user/${userId}`
         );
         setLoadedPlaces(responseData.places);
       } catch (err) {}
@@ -38,7 +38,7 @@ const UserPlaces = () => {
           <LoadingSpinner />
         </div>
       )}
-      {!isLoading && (
+      {!isLoading && loadedPlaces && (
         <PlaceList
           userId={userId}
           items={loadedPlaces}

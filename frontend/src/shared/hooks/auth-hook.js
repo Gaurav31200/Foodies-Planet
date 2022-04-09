@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 let logoutTimer;
 export const useAuth = () => {
   const token = useSelector((state) => state.auth.token);
-  const tokenExpirationDate = useSelector(
+  let tokenExpirationDate = useSelector(
     (state) => state.auth.tokenExpirationDate
   );
   const dispatch = useDispatch();
@@ -23,7 +23,13 @@ export const useAuth = () => {
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("userData"));
     if (data && data.token && new Date(data.expirationTime) > new Date()) {
-      dispatch(authActions.login({ uId: data.userId, token: data.token }));
+      dispatch(
+        authActions.login({
+          uId: data.userId,
+          token: data.token,
+          expirationTime: data.expirationTime,
+        })
+      );
     }
   }, [dispatch]);
 };

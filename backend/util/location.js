@@ -1,5 +1,3 @@
-const access_token =
-  "pk.eyJ1IjoiZ2F1cmF2MzEyIiwiYSI6ImNsMDZkMXdtYTBjYjUza3IyOThuNjloMTkifQ.Ffw3bv9p56F4zWfw50tp1Q";
 const axios = require("axios");
 const HttpError = require("../models/http-error");
 
@@ -7,7 +5,7 @@ const getCooByAdd = async (address) => {
   const res = await axios.get(
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
       address
-    )}.json?access_token=${access_token}`
+    )}.json?access_token=${process.env.ACCESS_TOKEN}`
   );
   const data = res.data;
   if (!data) {

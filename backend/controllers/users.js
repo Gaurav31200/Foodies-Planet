@@ -1,4 +1,5 @@
 // const { v4: uuid } = require("uuid");
+const cloudinary = require("../util/cloudinary");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -42,11 +43,19 @@ const signupUser = async (req, res, next) => {
     return next(new HttpError("Can't create a new user", 500));
   }
 
+  let response;
+  try {
+    response = await cloudinary.uploader.upload(req.file.path);
+  } catch (err) {
+    return next(err);
+  }
+
   const newUser = new user({
     name,
     email,
     password: hashedPassword,
-    image: req.file.path,
+    imageUrl: response.secure_url,
+    imagePublicId: response.public_id,
     places: [],
   });
 
@@ -59,7 +68,7 @@ const signupUser = async (req, res, next) => {
   try {
     token = await jwt.sign(
       { userId: newUser.id, email: newUser.email },
-      "Foodies_Secret_Key",
+      process.env.SECRET_KEY,
       { expiresIn: "1h" }
     );
   } catch (err) {
@@ -111,7 +120,7 @@ const loginUser = async (req, res, next) => {
   try {
     token = await jwt.sign(
       { userId: existingUser.id, email: existingUser.email },
-      "Foodies_Secret_Key",
+      process.env.SECRET_KEY,
       { expiresIn: "1h" }
     );
   } catch (err) {
