@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "food-order-app-4f453"
-  }
+    "default": "foodies-planet",
+    "foodies": "foodies-planet"
+  },
+  "targets": {}
 }
